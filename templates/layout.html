@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="x-ua-compatible" content="ie=edge">
-        <title>{% block title %}A Learning Journal {% endblock %}</title>
+        <title>MyJournal</title>
         <link href="https://fonts.googleapis.com/css?family=Cousine:400" rel="stylesheet" type="text/css">
         <link href="https://fonts.googleapis.com/css?family=Work+Sans:600" rel="stylesheet" type="text/css">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -14,36 +14,32 @@
         <header>
             <div class="container">
                 <div class="site-header">
-                    {% if current_user.is_authenticated() %}
-                    <a class="logo" href="index.html"><i class="material-icons">library_books</i></a>
-                    <a class="button icon-right" href="new.html"><span>New Entry</span> <i class="material-icons">add</i></a>
-                    <a class="button icon-right" href="new.html"><span>Log Off</span> <i class="material-icons">add</i></a>
-
-                    {% endif %}
+                    <h1>Welcome to the Learning Journal</h1>
+                    <h2>a web app built with Python and Flask</h2>
+                    <div class="container">
+                        {% if current_user.is_authenticated %}
+                        <a class="logo" href="{{ url_for('index') }}"><i class="material-icons">library_books</i></a>
+                        <a class="button icon-right" href="{{ url_for('new_entry') }}"><span>New Entry</span> <i class="material-icons">add</i></a>
+                        <a href="{{ url_for('logout') }}" class="button button-secondary" title="Log Out!">Log Out!</a>
+                        <a href="{{ url_for('index') }}" class="button button-secondary" title="Home">Home</a>
+                        {% else %}
+                            <!-- <a href="{{ url_for('login') }}" class="button icon-right" title="Log In!">Log In!</a> -->
+                            <a href="{{ url_for('register') }}" class="site-sexy_button" title="Register!">Register!</a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </header>
+        {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="notification {{ category }}">{{ message }}</div>
+             {% endfor %}
+         {% endif %}
+         {% endwith %}
         <section>
-            <div class="container">
-                <div class="entry-list">
-                    <article>
-                        <h2><a href="detail.html">The best day I’ve ever had</a></h2>
-                        <time datetime="2016-01-31">January 31, 2016</time>
-                    </article>
-                    <article>
-                        <h2><a href="detail_2.html">The absolute worst day I’ve ever had</a></h2>
-                        <time datetime="2016-01-31">January 31, 2016</time>
-                    </article>
-                    <article>
-                        <h2><a href="detail_3.html">That time at the mall</a></h2>
-                        <time datetime="2016-01-31">January 31, 2016</time>
-                    </article>
-                    <article>
-                        <h2><a href="detail_4.html">Dude, where’s my car?</a></h2>
-                        <time datetime="2016-01-31">January 31, 2016</time>
-                    </article>
-                </div>
-            </div>
+            {% block content %}
+            {% endblock %}
         </section>
         <footer>
             <div>

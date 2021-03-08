@@ -1,10 +1,16 @@
-from flask_wtf import Form
+#!usr/bin/env python
+from flask_wtf import FlaskForm
 from wtforms import (StringField, PasswordField, TextAreaField,
-                     IntegerField, DateField)
+                     IntegerField, FieldList)
 from wtforms.validators import (DataRequired, Regexp, ValidationError,
                                 Email, Length, EqualTo, Optional)
 
-from models import User
+from models import User, Entry
+
+
+def validate_title(field, form):
+    if Entry.select().where(Entry.title == field.data).exists():
+        raise ValidationError("There's already an entry with this title!")
 
 
 def name_exists(form, field):
@@ -17,7 +23,7 @@ def email_exists(form, field):
         raise ValidationError('User with that email already exists.')
 
 
-class RegistrationForm(Form):
+class RegistrationForm(FlaskForm):
     username = StringField(
         'Username',
         validators=[
@@ -55,17 +61,23 @@ class RegistrationForm(Form):
         ])
 
 
-class LoginForm(Form):
+class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
 
 
-class EntryForm(Form):
-    title = StringField('Title:', validators=[DataRequired()])
-    date = DateField('Date of Study:', format='%Y-%m-%d')
+class EntryForm(FlaskForm):
+    title = StringField('Title:', validators=[DataRequired(), validate_title])
+    # date = DateField('Date of Study:', format='%d-%m-%Y')
     time_spent = IntegerField(
         "Study Time (Minutes):", validators=[DataRequired()]
     )
     learned = TextAreaField("What I Learned:", validators=[DataRequired()])
     resources = TextAreaField("Resources for further learning:",
                               validators=[Optional()])
+
+
+class TaggingForm(FlaskForm):
+    content = StringField(
+        'Subject Tags:',
+        validators=[Optional()])

@@ -1,0 +1,22 @@
+{% extends 'layout.html' %}
+{% from 'macros.html' import render_field %}
+
+{% block content %}
+    <section>
+        <div class="container-fluid">
+            <div class="entry-list">
+                {% if entries %}
+                    {% for entry in entries %}
+                    <article>
+                        <h2><a href="{{ url_for('detail', entry_id=entry.id) }}">{{ entry.title }}</a></h2>
+                        <time>{{ entry.entry_date.strftime('%B %d, %Y') }}</time>
+                        <p>{{ entry.time_spent }} minutes of work.</p>
+                    </article>
+                    {% endfor %}
+                {% else %}
+                    <h2>Nothing to see here! Let's get to work!</h2>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+{% endblock %}

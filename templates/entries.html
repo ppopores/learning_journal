@@ -1,0 +1,15 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+{% if entries.count() %}
+    {% for entry in entries %}
+        <article>
+            <h2>
+                <a href="{{ url_for('detail', entry_id=entry.id) }}">{{ entry.title }}</a>
+            </h2>
+        </article>
+    {% endfor %}
+{% else %}
+    <h1>Nothing entered, nothing learned?</h1>
+{% endif %}
+{% endblock %}

@@ -1,3 +1,4 @@
+#!usr/bin/env python
 import datetime
 
 from flask_bcrypt import generate_password_hash
@@ -8,16 +9,17 @@ from peewee import *
 DATABASE = SqliteDatabase('journal.db')
 
 
-class User(UserMixin, Model):
+class BaseModel(Model):
+    class Meta:
+        database = DATABASE
+
+
+class User(UserMixin, BaseModel):
     username = CharField(unique=True)
     email = CharField(unique=True)
     password = CharField(max_length=100)
     user_bio = CharField(max_length=1000)
     is_admin = BooleanField(default=False)
-
-    class Meta:
-        database = DATABASE
-        order_by = ('username',)
 
     @classmethod
     def create_user(cls, username, email, password, user_bio, is_admin=False):
@@ -34,28 +36,43 @@ class User(UserMixin, Model):
 
 
 class Entry(Model):
-    # title
     title = CharField(unique=True)
-    # entry date
-    entry_date = DateField(default=datetime.date.today)
-    # time spent
+    entry_date = DateTimeField(default=datetime.date.today)
     time_spent = IntegerField(null=False)
-    # learned
     learned = TextField(null=False)
-    # resources
     resources = TextField(null=False)
-    # user
-    user = ForeignKeyField(
-        model=User,
-        backref='entries'
-    )
+    user = ForeignKeyField(User, backref='entries')
 
     class Meta:
         database = DATABASE
-    #    order_by = ('-entry_date',)
+
+    def tagged_to_entry(self):
+        return Entry.select().join(
+            EntryTags, on='tag_id'
+        ).where(journal_entry=self)
+
+
+class Tag(BaseModel):
+    content = CharField(max_length=55, null=False)
+    tagged_entry = ForeignKeyField(Entry, backref="tags")
+
+
+class EntryTags(Model):
+    from_entry = ForeignKeyField(Entry, backref="relationships")
+    to_entry = ForeignKeyField(Tag, backref="related_to")
+
+    class Meta:
+        database = DATABASE
+        indexes = (
+            (('from_entry', 'to_entry'), True),
+
+        )
 
 
 def initialize():
     DATABASE.connect()
-    DATABASE.create_tables([User], safe=True)
+    DATABASE.create_tables(
+        [User, Entry, Tag, EntryTags],
+        safe=True
+    )
     DATABASE.close()
