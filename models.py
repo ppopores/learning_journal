@@ -41,7 +41,7 @@ class Entry(Model):
     time_spent = IntegerField(null=False)
     learned = TextField(null=False)
     resources = TextField(null=False)
-    user = ForeignKeyField(User, backref='entries')
+    user = ForeignKeyField(User)
 
     class Meta:
         database = DATABASE
@@ -53,18 +53,18 @@ class Entry(Model):
 
 
 class Tag(BaseModel):
-    content = CharField(max_length=55, null=False)
-    tagged_entry = ForeignKeyField(Entry, backref="tags")
+    content = CharField(max_length=55, unique=True)
+    # tagged_entry = ForeignKeyField(Entry, backref="entrys")
 
 
 class EntryTags(Model):
-    from_entry = ForeignKeyField(Entry, backref="relationships")
-    to_entry = ForeignKeyField(Tag, backref="related_to")
+    entry = ForeignKeyField(Entry, backref="entrys")
+    tag = ForeignKeyField(Tag, backref="tags")
 
     class Meta:
         database = DATABASE
         indexes = (
-            (('from_entry', 'to_entry'), True),
+            (('entry', 'tag'), True),
 
         )
 

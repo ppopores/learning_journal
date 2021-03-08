@@ -12,7 +12,6 @@ import models
 from peewee import *
 
 app = Flask(__name__)
-app._static_folder = "/learning_journal/static"
 app.secret_key = 'sadfjksdf9sadvcnasdfl0.14cv.asdf541asd.'
 
 login_manager = LoginManager()
@@ -119,12 +118,15 @@ def new_entry():
         except IntegrityError:
             flash("Choose a unique title for each entry!")
         if tagging_form.data:
-            with models.DATABASE.atomic():
-                models.Tag.create(content=tagging_form.content.data)
-                models.EntryTags.create(
-                    from_entry=models.Entry.id,
-                    to_entry=models.Tag.id
-                )
+            try:
+                with models.DATABASE.atomic():
+                    models.Tag.create(content=tagging_form.content.data)
+                    models.EntryTags.create(
+                        entry=models.Entry.id,
+                        tag=models.Tag.id
+                    )
+            except models.IntegrityError:
+                pass
             return redirect(url_for('index'))
         else:
             return redirect(url_for('index'))

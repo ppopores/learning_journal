@@ -7,8 +7,8 @@
         <link href="https://fonts.googleapis.com/css?family=Cousine:400" rel="stylesheet" type="text/css">
         <link href="https://fonts.googleapis.com/css?family=Work+Sans:600" rel="stylesheet" type="text/css">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <link rel="stylesheet" href="css/normalize.css">
-        <link rel="stylesheet" href="css/site.css">
+        <link rel="stylesheet" href="/static/css/normalize.css">
+        <link rel="stylesheet" href="/static/css/site.css">
     </head>
     <body>
         <header>
@@ -20,8 +20,8 @@
                         {% if current_user.is_authenticated %}
                         <a class="logo" href="{{ url_for('index') }}"><i class="material-icons">library_books</i></a>
                         <a class="button icon-right" href="{{ url_for('new_entry') }}"><span>New Entry</span> <i class="material-icons">add</i></a>
-                        <a href="{{ url_for('logout') }}" class="button button-secondary" title="Log Out!">Log Out!</a>
-                        <a href="{{ url_for('index') }}" class="button button-secondary" title="Home">Home</a>
+                        <a href="{{ url_for('logout') }}" class="button icon-right" title="Log Out!">Log Out!</a>
+                        <a href="{{ url_for('index') }}" class="button icon-right" title="Home">Home</a>
                         {% else %}
                             <!-- <a href="{{ url_for('login') }}" class="button icon-right" title="Log In!">Log In!</a> -->
                             <a href="{{ url_for('register') }}" class="site-sexy_button" title="Register!">Register!</a>
