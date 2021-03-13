@@ -1,5 +1,4 @@
 #!usr/bin/env python
-
 from flask import (Flask, g, render_template, flash, redirect, url_for,
                    abort)
 from flask_bcrypt import check_password_hash
@@ -54,10 +53,6 @@ def register():
         return redirect(url_for('index'))
     return render_template('register.html', reg_form=reg_form)
 
-# create index view, register view
-# / - Known as the root page, homepage,
-# landing page but will act as the Listing route.
-
 
 @app.route('/login', methods=('GET', 'POST'))
 def login():
@@ -104,7 +99,7 @@ def logout():
 @login_required
 def new_entry():
     entry_form = forms.EntryForm()
-    tagging_form = forms.TaggingForm()
+    # tagging_form = forms.TaggingForm()
     if entry_form.validate_on_submit():
         try:
             models.Entry.create(
@@ -113,62 +108,48 @@ def new_entry():
                 time_spent=entry_form.time_spent.data,
                 learned=entry_form.learned.data,
                 resources=entry_form.resources.data,
+                tag=entry_form.tag.data.split()
             )
+            # g.entry = journal_entry.Entry.get(journal_entry.id)
             flash("Rad! New entry submitted!", "success")
         except IntegrityError:
             flash("Choose a unique title for each entry!")
-        if tagging_form.data:
-            try:
-                with models.DATABASE.atomic():
-                    models.Tag.create(content=tagging_form.content.data)
-                    models.EntryTags.create(
-                        entry=models.Entry.id,
-                        tag=models.Tag.id
-                    )
-            except models.IntegrityError:
-                pass
-            return redirect(url_for('index'))
-        else:
-            return redirect(url_for('index'))
+        return redirect(url_for('index'))
     return render_template(
-        "new.html", entry_form=entry_form, tagging_form=tagging_form)
+        "new.html", entry_form=entry_form)
 
 
-# @app.route('/tag/<int:entry_id>')
-# @login_required
-# def tag_entry(entry_id):
-#     try:
-#         to_entry = models.Entry.get(models.Entry.entry_id**entry_id)
-#     except models.DoesNotExist:
-#         pass
-#     else:
-#         try:
-#             models.EntryTags.create(
-#                 entry=entry_id,
-#                 tag=
-#             )
-#
-
-@ app.route('/entries/<int:entry_id>')
-@ login_required
+@app.route('/entries/<int:entry_id>')
+@login_required
 def detail(entry_id):
-    entry = models.Entry.get(
-        models.Entry.id == entry_id
-    )
-    tags = (
-        Tag.select()
-        .join(EntryTags)
-        .join(Tag)
-        .where(
-            (EntryTags.tag << tags) &
-            (Entry.published is True)
+    try:
+        entry = models.Entry.get(
+            models.Entry.id == entry_id
         )
-    )
-    return render_template('detail.html', entry=entry, tags=tags)
+        entry_tags = entry.tag.split()
+        return render_template(
+            'detail.html',
+            entry=entry,
+            entry_tags=entry_tags
+        )
+    except models.DoesNotExist:
+        abort(404)
 
 
-@ app.route('/')
-@ login_required
+@app.route('/tags/<tag>')
+@login_required
+def tags(tag):
+    try:
+        entry_tags = models.Entry.select().where(
+            models.Entry.tag.contains(tag)
+        )
+        return render_template("tags.html", entry_tags=entry_tags)
+    except models.DoesNotExist:
+        abort(404)
+
+
+@app.route('/')
+@login_required
 def index():
     entries = models.Entry.select().limit(100)
     return render_template('index.html', entries=entries)
@@ -183,67 +164,62 @@ def entries():
     return render_template('entries.html', entries=entries)
 
 
-@ app.route('/entries/<int:entry_id>/edit', methods=('GET', 'POST'))
-@ login_required
+@app.route('/entries/<int:entry_id>/edit', methods=('GET', 'POST'))
+@login_required
 def edit_entries(entry_id):
-    current_entry = models.Entry.get(
-        entry_id == models.Entry.id
-    )
-    if current_entry:
-        form = forms.EntryForm(obj=current_entry)
-        if form.validate_on_submit():
-            edited_entry = models.Entry.update(
-                user=g.user.id,
-                # title=form.title.data,
-                time_spent=form.time_spent.data,
-                learned=form.learned.data,
-                resources=form.resources.data,
-            )
-            edited_entry.execute()
-            flash("Edited and updated!", "success")
+    try:
+        current_entry = models.Entry.get(
+            entry_id == models.Entry.id
+        )
+        if g.user.id is current_entry.user_id:
+            form = forms.EntryForm(obj=current_entry)
+            if form.validate_on_submit():
+                edited_entry = models.Entry.update(
+                    user=g.user.id,
+                    # title=form.title.data,
+                    time_spent=form.time_spent.data,
+                    learned=form.learned.data,
+                    resources=form.resources.data,
+                    tag=form.tag.data
+                )
+                edited_entry.execute()
+                flash("Edited and updated!", "success")
+                return redirect(url_for('index'))
+            else:
+                return render_template(
+                    'edit.html', current_entry=current_entry, form=form
+                )
+        else:
+            flash("Hey! This isn't yours to edit!", "error")
+            return redirect(url_for('index'))
+    except models.EntryDoesNotExist:
+        abort(404)
+
+
+@app.route('/entries/<int:entry_id>/delete', methods=('GET', 'POST'))
+@login_required
+def delete_entry(entry_id):
+    try:
+        current_entry = models.Entry.get(
+            entry_id == models.Entry.id
+        )
+        if g.user.id is current_entry.user_id:
+            models.Entry.delete_instance(current_entry)
+            flash("Entry deleted forever!", "success")
             return redirect(url_for('index'))
         else:
-            return render_template(
-                'edit.html', current_entry=current_entry, form=form
-            )
-    else:
-        pass
-
-
-@ app.route('/entries/<int:entry_id>/delete', methods=('GET', 'POST'))
-@ login_required
-def delete_entry(entry_id):
-    current_entry = models.Entry.get(
-        entry_id == models.Entry.id
-    )
-    if current_entry:
-        models.Entry.delete_instance(current_entry)
-        flash("Entry deleted forever!", "success")
-        return redirect(url_for('index'))
-    else:
+            flash("Can't delete that which you did not create.", "error")
+            return redirect(url_for('index'))
         return render_template(
             'delete.html', current_entry=current_entry)
+    except models.DoesNotExist:
+        abort(404)
 
 
-# @app.route('/entries/<int:entry_id>/tag_entry')
-# @login_required
-# def tag_entry(entry_id):
-#     try:
-#         tagged_entry = models.Entry.get(models.Entry.entry_id**entry_id)
-#     except models.DoesNotExist:
-#         abort(404)
-#     else:
-#         try:
-#             models.TagRelationship.create(
-#                 created_by=g.Tag._get_current_object(),
-#                 tag=form.a_tag.data,
-#
-#             )
-#         except models.IntegrityError:
-#             pass
-#         else:
-#             flash(f"You've tagged {tagged_entry.title}!", "success")
-#     return redirect(url_for('index'))
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
 
 if __name__ == '__main__':
     models.initialize()

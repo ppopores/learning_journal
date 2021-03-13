@@ -23,24 +23,31 @@
                         <a href="{{ url_for('logout') }}" class="button icon-right" title="Log Out!">Log Out!</a>
                         <a href="{{ url_for('index') }}" class="button icon-right" title="Home">Home</a>
                         {% else %}
-                            <!-- <a href="{{ url_for('login') }}" class="button icon-right" title="Log In!">Log In!</a> -->
-                            <a href="{{ url_for('register') }}" class="site-sexy_button" title="Register!">Register!</a>
+                            <div>
+                                <a href="{{ url_for('register') }}" class="button" title="Register!">Register!</a>
+                            </div>
                         {% endif %}
                     </div>
                 </div>
             </div>
         </header>
-        {% with messages = get_flashed_messages(with_categories=True) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="notification {{ category }}">{{ message }}</div>
-             {% endfor %}
-         {% endif %}
-         {% endwith %}
-        <section>
-            {% block content %}
-            {% endblock %}
-        </section>
+        <body>
+            <div>
+                {% with messages = get_flashed_messages(with_categories=True) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="notification {{ category }}">{{ message }}</div>
+                     {% endfor %}
+                 {% endif %}
+                 {% endwith %}
+                 <div class="container-fluid">
+                    <section>
+                        {% block content %}
+                        {% endblock %}
+                    </section>
+                </div>
+            </div>
+        </body>
         <footer>
             <div>
                 &copy; MyJournal

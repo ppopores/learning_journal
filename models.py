@@ -42,37 +42,53 @@ class Entry(Model):
     learned = TextField(null=False)
     resources = TextField(null=False)
     user = ForeignKeyField(User)
+    timestamp = DateTimeField(default=datetime.datetime.now)
+    tag = TextField(null=False)
 
     class Meta:
         database = DATABASE
 
-    def tagged_to_entry(self):
-        return Entry.select().join(
-            EntryTags, on='tag_id'
-        ).where(journal_entry=self)
+    # def tagged_to_entry(self):
+    #     return Entry.select().join(
+    #         EntryTags, on='tag_id'
+    #     ).where(journal_entry=self)
+    #
 
 
-class Tag(BaseModel):
-    content = CharField(max_length=55, unique=True)
-    # tagged_entry = ForeignKeyField(Entry, backref="entrys")
+# class Tag(BaseModel):
+#     content = CharField()
+#     # entries = ManyToManyField(Entry, backref="entries")
+#     # tagged_entry = ForeignKeyField(Entry, backref="entrys")
+#
+#
+# class EntryTag(BaseModel):
+#     entry = ForeignKeyField(Entry)  # implied backref is entry
+#     tag = ForeignKeyField(Tag)  # implied backref is tag
 
+    # class Meta:
+    #     database = DATABASE
+    #     indexes = (
+    #         (('entry', 'tag'), True),
+    #     )
 
-class EntryTags(Model):
-    entry = ForeignKeyField(Entry, backref="entrys")
-    tag = ForeignKeyField(Tag, backref="tags")
-
-    class Meta:
-        database = DATABASE
-        indexes = (
-            (('entry', 'tag'), True),
-
-        )
+    # @classmethod
+    # def create_entry_tags(cls, entry, tag):
+    #     entry_key = Entry.select().join(Tag).where(Tag.id == tag_id)
+    #     tag_key = (Tag.select().join(Entry).where(Entry.id == entry_id)
+    #     try:
+    #         cls.create(
+    #             entry=entry_key,
+    #             tag=tag_key
+    #         )
+    #     except IntegrityError:
+    #         pass
 
 
 def initialize():
+    # EntryTag = Tag.entries.get_through_model()
     DATABASE.connect()
     DATABASE.create_tables(
-        [User, Entry, Tag, EntryTags],
+        [User, Entry],
         safe=True
     )
     DATABASE.close()

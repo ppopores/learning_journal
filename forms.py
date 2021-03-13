@@ -1,7 +1,7 @@
 #!usr/bin/env python
 from flask_wtf import FlaskForm
 from wtforms import (StringField, PasswordField, TextAreaField,
-                     IntegerField, FieldList)
+                     IntegerField)
 from wtforms.validators import (DataRequired, Regexp, ValidationError,
                                 Email, Length, EqualTo, Optional)
 
@@ -75,9 +75,13 @@ class EntryForm(FlaskForm):
     learned = TextAreaField("What I Learned:", validators=[DataRequired()])
     resources = TextAreaField("Resources for further learning:",
                               validators=[Optional()])
-
-
-class TaggingForm(FlaskForm):
-    content = StringField(
+    tag = StringField(
         'Subject Tags:',
-        validators=[Optional()])
+        validators=[
+            Optional(),
+            Regexp(
+                r'^[a-zA-Z0-9_\s]+$',
+                message="Tags must best letters. "
+                "Spaces separate individual tags."
+            )
+        ])

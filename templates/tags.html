@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<body>
+    <div>
+        <ul class="entry-list">
+        <h3>Here are the entries related to {{ entry_tags.tag }}</h3>
+
+            {% for item in entry_tags %}
+                <li><a href="{{ url_for('detail', entry_id=item.id) }}">{{ item.title }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+{% endblock %}

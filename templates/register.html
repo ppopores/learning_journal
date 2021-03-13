@@ -1,8 +1,9 @@
 {% from 'macros.html' import render_field %}
+{% extends "layout.html" %}
 
 {% block content %}
-<h1>Please register for the Learning Journal</h1>
-<h2>If you like, please fill out a short bio.</h2>
+<h3>Please register for the Learning Journal</h3>
+<p>If you like, please fill out a short bio.</p>
 <form method="POST" action="" class="form">
     {{ reg_form.hidden_tag() }}
     {% for field in reg_form %}

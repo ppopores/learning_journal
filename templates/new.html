@@ -9,8 +9,6 @@
         {% for field in entry_form %}
             {{ render_field(field) }}
         {% endfor %}
-        {{  tagging_form.hidden_tag() }}
-        {{ render_field(tagging_form.content) }}
         <button type="submit" id="submit">Publish!</button>
         <a href="{{ url_for('index') }}" class="button button-secondary">Cancel</a>
     </form>
