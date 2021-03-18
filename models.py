@@ -36,59 +36,60 @@ class User(UserMixin, BaseModel):
 
 
 class Entry(Model):
-    title = CharField(unique=True)
+    title = CharField(null=False)
     entry_date = DateTimeField(default=datetime.date.today)
     time_spent = IntegerField(null=False)
     learned = TextField(null=False)
     resources = TextField(null=False)
     user = ForeignKeyField(User)
     timestamp = DateTimeField(default=datetime.datetime.now)
-    tag = TextField(null=False)
 
     class Meta:
         database = DATABASE
 
-    # def tagged_to_entry(self):
-    #     return Entry.select().join(
-    #         EntryTags, on='tag_id'
-    #     ).where(journal_entry=self)
-    #
+    @classmethod
+    def create_entry(cls,
+                     title,
+                     time_spent,
+                     learned,
+                     resources,
+                     user,
+                     ):
+        try:
+            cls.create(
+                title=title,
+                time_spent=time_spent,
+                learned=learned,
+                resources=resources,
+                user=user,
+            )
+        except IntegrityError:
+            raise ValueError("Please try again.")
 
 
-# class Tag(BaseModel):
-#     content = CharField()
-#     # entries = ManyToManyField(Entry, backref="entries")
-#     # tagged_entry = ForeignKeyField(Entry, backref="entrys")
-#
-#
-# class EntryTag(BaseModel):
-#     entry = ForeignKeyField(Entry)  # implied backref is entry
-#     tag = ForeignKeyField(Tag)  # implied backref is tag
+class Tag(BaseModel):
+    content = CharField()
 
-    # class Meta:
-    #     database = DATABASE
-    #     indexes = (
-    #         (('entry', 'tag'), True),
-    #     )
+    @classmethod
+    def create_tags(cls, content):
+        try:
+            cls.create(
+                content=content
+            )
+        except IntegrityError:
+            raise ValueError("Please try again.")
 
-    # @classmethod
-    # def create_entry_tags(cls, entry, tag):
-    #     entry_key = Entry.select().join(Tag).where(Tag.id == tag_id)
-    #     tag_key = (Tag.select().join(Entry).where(Entry.id == entry_id)
-    #     try:
-    #         cls.create(
-    #             entry=entry_key,
-    #             tag=tag_key
-    #         )
-    #     except IntegrityError:
-    #         pass
+
+class EntryTag(BaseModel):
+    entry = ForeignKeyField(Entry)  # implied backref is entry
+    tag = ForeignKeyField(Tag)  # implied backref is tag
 
 
 def initialize():
     # EntryTag = Tag.entries.get_through_model()
     DATABASE.connect()
     DATABASE.create_tables(
-        [User, Entry],
+        [User, Entry, Tag, EntryTag],
         safe=True
     )
     DATABASE.close()

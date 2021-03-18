@@ -101,19 +101,17 @@ def new_entry():
     entry_form = forms.EntryForm()
     # tagging_form = forms.TaggingForm()
     if entry_form.validate_on_submit():
-        try:
-            models.Entry.create(
-                user=g.user.id,
-                title=entry_form.title.data,
-                time_spent=entry_form.time_spent.data,
-                learned=entry_form.learned.data,
-                resources=entry_form.resources.data,
-                tag=entry_form.tag.data.split()
-            )
-            # g.entry = journal_entry.Entry.get(journal_entry.id)
-            flash("Rad! New entry submitted!", "success")
-        except IntegrityError:
-            flash("Choose a unique title for each entry!")
+        models.Entry.create_entry(
+            user=g.user.id,
+            title=entry_form.title.data,
+            time_spent=entry_form.time_spent.data,
+            learned=entry_form.learned.data,
+            resources=entry_form.resources.data,
+        )
+        models.Tag.create_tags(
+            content=entry_form.tag.data
+        )
+        flash("Rad! New entry submitted!", "success")
         return redirect(url_for('index'))
     return render_template(
         "new.html", entry_form=entry_form)
@@ -180,7 +178,7 @@ def edit_entries(entry_id):
                     time_spent=form.time_spent.data,
                     learned=form.learned.data,
                     resources=form.resources.data,
-                    tag=form.tag.data
+                    # tag=form.tag.data
                 )
                 edited_entry.execute()
                 flash("Edited and updated!", "success")

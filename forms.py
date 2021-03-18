@@ -82,6 +82,5 @@ class EntryForm(FlaskForm):
             Regexp(
                 r'^[a-zA-Z0-9_\s]+$',
                 message="Tags must best letters. "
-                "Spaces separate individual tags."
             )
         ])
