@@ -135,7 +135,7 @@ def detail(entry_id):
         entry_tags = (models.Tag.select(models.Tag)
                       .join(models.EntryTag)
                       .join(models.Entry)
-                      .where(models.EntryTag.entry_tag_id == entry_id)
+                      .where(models.EntryTag.entry_tag_id == models.Entry.id)
                       )
 
         return render_template(
