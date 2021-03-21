@@ -99,7 +99,7 @@ def logout():
 @login_required
 def new_entry():
     entry_form = forms.EntryForm()
-    # tagging_form = forms.TaggingForm()
+    tag_form = forms.TagForm()
     if entry_form.validate_on_submit():
         models.Entry.create_entry(
             user=g.user.id,
@@ -108,13 +108,21 @@ def new_entry():
             learned=entry_form.learned.data,
             resources=entry_form.resources.data,
         )
-        models.Tag.create_tags(
-            content=entry_form.tag.data
-        )
+        try:
+            if tag_form.validate_on_submit():
+                tags = tag_form.tag_content.data.split()
+                for tag in tags:
+                    models.Tag.create_tags(tag)
+                    models.EntryTag.create_linked_tag(
+                        entry=entry_form.title.data,
+                        tag=tag
+                    )
+        except IntegrityError:
+            pass
         flash("Rad! New entry submitted!", "success")
         return redirect(url_for('index'))
     return render_template(
-        "new.html", entry_form=entry_form)
+        "new.html", entry_form=entry_form, tag_form=tag_form)
 
 
 @app.route('/entries/<int:entry_id>')
@@ -124,7 +132,12 @@ def detail(entry_id):
         entry = models.Entry.get(
             models.Entry.id == entry_id
         )
-        entry_tags = entry.tag.split()
+        entry_tags = (models.Tag.select(models.Tag)
+                      .join(models.EntryTag)
+                      .join(models.Entry)
+                      .where(models.EntryTag.entry_tag_id == entry_id)
+                      )
+
         return render_template(
             'detail.html',
             entry=entry,
@@ -134,23 +147,43 @@ def detail(entry_id):
         abort(404)
 
 
-@app.route('/tags/<tag>')
-@login_required
-def tags(tag):
+@ app.route('/tags/<int:tag_id>')
+@ login_required
+def tags(tag_id):
     try:
-        entry_tags = models.Entry.select().where(
-            models.Entry.tag.contains(tag)
-        )
-        return render_template("tags.html", entry_tags=entry_tags)
+        tagged_entries = (models.Entry
+                          .select()
+                          .join(models.EntryTag)
+                          .join(models.Tag)
+                          .where(tag_id == models.EntryTag.id)
+                          )
+        specific_tag = (models.Tag.get(tag_id == models.Tag.id))
+
+        return render_template("tags.html",
+                               tagged_entries=tagged_entries,
+                               specific_tag=specific_tag)
     except models.DoesNotExist:
         abort(404)
 
 
-@app.route('/')
-@login_required
+@ app.route('/')
+@ login_required
 def index():
     entries = models.Entry.select().limit(100)
-    return render_template('index.html', entries=entries)
+    # entry_tags = []
+    entry_tags = (models.Tag
+                  .select()
+                  .join(models.EntryTag)
+                  .join(models.Entry)
+                  .where(models.Entry.id == models.EntryTag.entry_tag_id)
+                  )
+    # for tag in tagged_entries:
+    #     entry_tags.append(tag.id)
+    return render_template(
+        'index.html',
+        entries=entries,
+        entry_tags=entry_tags
+    )
 
 
 @ app.route('/entries')
@@ -162,8 +195,8 @@ def entries():
     return render_template('entries.html', entries=entries)
 
 
-@app.route('/entries/<int:entry_id>/edit', methods=('GET', 'POST'))
-@login_required
+@ app.route('/entries/<int:entry_id>/edit', methods=('GET', 'POST'))
+@ login_required
 def edit_entries(entry_id):
     try:
         current_entry = models.Entry.get(
@@ -194,8 +227,8 @@ def edit_entries(entry_id):
         abort(404)
 
 
-@app.route('/entries/<int:entry_id>/delete', methods=('GET', 'POST'))
-@login_required
+@ app.route('/entries/<int:entry_id>/delete', methods=('GET', 'POST'))
+@ login_required
 def delete_entry(entry_id):
     try:
         current_entry = models.Entry.get(
@@ -214,7 +247,7 @@ def delete_entry(entry_id):
         abort(404)
 
 
-@app.errorhandler(404)
+@ app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
 

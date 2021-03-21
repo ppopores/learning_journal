@@ -13,12 +13,13 @@
     {% endif %}
     {% if entry_tags %}
         <h3>Links to similar entries:</h3>
-        {% for value in entry_tags %}
-        <p>
+        <div>
+        {% for tag in entry_tags %}
+
             <ul>
-                <li><a href="{{ url_for('tags', tag=value) }}">{{ value[1:-1].strip("'") }}</a></li>
+                <li><a href="{{ url_for('tags', tag_id=tag.id) }}">{{ tag.tag_content }}</a></li>
             </ul>
-        </p>
+        </div>
         {% endfor %}
     {% endif %}
 </div>

@@ -8,9 +8,9 @@ from wtforms.validators import (DataRequired, Regexp, ValidationError,
 from models import User, Entry
 
 
-def validate_title(field, form):
-    if Entry.select().where(Entry.title == field.data).exists():
-        raise ValidationError("There's already an entry with this title!")
+# def validate_title(field, form):
+#     if Entry.select().where(Entry.title == field.data).exists():
+#         raise ValidationError("There's already an entry with this title!")
 
 
 def name_exists(form, field):
@@ -67,15 +67,18 @@ class LoginForm(FlaskForm):
 
 
 class EntryForm(FlaskForm):
-    title = StringField('Title:', validators=[DataRequired(), validate_title])
+    title = StringField('Title:', validators=[DataRequired()])
     # date = DateField('Date of Study:', format='%d-%m-%Y')
     time_spent = IntegerField(
         "Study Time (Minutes):", validators=[DataRequired()]
     )
     learned = TextAreaField("What I Learned:", validators=[DataRequired()])
     resources = TextAreaField("Resources for further learning:",
-                              validators=[Optional()])
-    tag = StringField(
+                              validators=[DataRequired()])
+
+
+class TagForm(FlaskForm):
+    tag_content = StringField(
         'Subject Tags:',
         validators=[
             Optional(),

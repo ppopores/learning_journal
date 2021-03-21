@@ -6,7 +6,13 @@
     <h2>New Entry</h2>
     <form method="POST" action="" class="form">
         {{ entry_form.hidden_tag() }}
+        <!-- {{ tag_form.hidden_tag() }} -->
         {% for field in entry_form %}
+            {{ field.label }}
+            {{ render_field(field) }}
+        {% endfor %}
+        {% for field in tag_form %}
+            {{ field.label }}
             {{ render_field(field) }}
         {% endfor %}
         <button type="submit" id="submit">Publish!</button>

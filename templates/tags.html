@@ -4,10 +4,10 @@
 <body>
     <div>
         <ul class="entry-list">
-        <h3>Here are the entries related to {{ entry_tags.tag }}</h3>
+        <h3>Here are the entries related to {{ specific_tag.tag_content }}:</h3>
 
-            {% for item in entry_tags %}
-                <li><a href="{{ url_for('detail', entry_id=item.id) }}">{{ item.title }}</a></li>
+            {% for entry in tagged_entries %}
+                <li><a href="{{ url_for('detail', entry_id=entry.id) }}">{{ entry.title }}</a></li>
             {% endfor %}
         </ul>
     </div>

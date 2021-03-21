@@ -24,13 +24,14 @@ class User(UserMixin, BaseModel):
     @classmethod
     def create_user(cls, username, email, password, user_bio, is_admin=False):
         try:
-            cls.create(
-                username=username,
-                email=email,
-                password=generate_password_hash(password),
-                user_bio=user_bio,
-                is_admin=False
-            )
+            with DATABASE.transaction():
+                cls.create(
+                    username=username,
+                    email=email,
+                    password=generate_password_hash(password),
+                    user_bio=user_bio,
+                    is_admin=False
+                )
         except IntegrityError:
             raise ValueError("User already exists!")
 
@@ -55,34 +56,60 @@ class Entry(Model):
                      resources,
                      user,
                      ):
-        try:
-            cls.create(
-                title=title,
-                time_spent=time_spent,
-                learned=learned,
-                resources=resources,
-                user=user,
-            )
-        except IntegrityError:
-            raise ValueError("Please try again.")
+        # try:
+        cls.create(
+            title=title,
+            time_spent=time_spent,
+            learned=learned,
+            resources=resources,
+            user=user,
+        )
+
+    def get_tags():
+        return(Tag
+               .select(Entry, Tag, EntryTag)
+               .join(Entry)
+               .switch(EntryTag)
+               .join(Tag)
+               )
 
 
 class Tag(BaseModel):
-    content = CharField()
+    tag_content = CharField(unique=True, null=False)
 
     @classmethod
-    def create_tags(cls, content):
+    def create_tags(cls, tag_content):
         try:
             cls.create(
-                content=content
+                tag_content=tag_content
             )
         except IntegrityError:
-            raise ValueError("Please try again.")
+            pass
+
+    @classmethod
+    def find_entries(cls):
+        return(Entry
+               .select()
+               .join(
+                   EntryTag,
+                   on=EntryTag.tag_entry
+               ).where(
+                   EntryTag.entry_tag == cls)
+               )
 
 
 class EntryTag(BaseModel):
-    entry = ForeignKeyField(Entry)  # implied backref is entry
-    tag = ForeignKeyField(Tag)  # implied backref is tag
+    entry_tag = ForeignKeyField(Entry, backref='entry_tag')
+    tag_entry = ForeignKeyField(Tag, backref='tag_entry')
+
+    @classmethod
+    def create_linked_tag(cls, entry, tag):
+        tag = Tag.get(Tag.tag_content == tag)
+        entry = Entry.get(Entry.title == entry)
+        cls.create(
+            tag_entry=tag.id,
+            entry_tag=entry.id
+        )
 
 
 def initialize():
