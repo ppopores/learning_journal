@@ -165,12 +165,13 @@ def tags(tag_id):
 @ app.route('/')
 @ login_required
 def index():
-    entries = (models.Entry
-               .select()
-               .join(models.EntryTag)
-               .join(models.Tag)
-               )
-    specific_tag = (models.Tag.get(entries.tag_id == models.Tag.id))
+    entries = models.Entry.select().where(
+        g.user.id == models.Entry.user
+    ).limit(100)
+
+    for entry in entries:
+        ident = entry.id
+        specific_tag = (models.Tag.select().where(ident == models.Tag.id))
     return render_template(
         'index.html',
         entries=entries,

@@ -8,14 +8,16 @@
                 {% if entries %}
                     {% for item in entries %}
                     <article>
-                        <h2><a href="{{ url_for('detail', entry_id=item.entrytag.entry_id) }}">{{ item.entry.title }}</a></h2>
-                        <time>{{ item.entry.entry_date.strftime('%B %d, %Y') }}</time>
-                        <p>{{ item.entry.time_spent }} minutes of work.</p>
-                        <!-- <div class="container">
+                        <h2><a href="{{ url_for('detail', entry_id=item.id) }}">{{ item.title }}</a></h2>
+                        <time>{{ item.entry_date.strftime('%B %d, %Y') }}</time>
+                        <p>{{ item.time_spent }} minutes of work.</p>
+                        <div class="container">
+                            {% for tag in specific_tag %}
                             <ul>
                                 <li><a href="{{ url_for('tags', tag_id=tag.id) }}">{{ tag.tag_content }}</a></li>
                             </ul>
-                        </div> -->
+                            {% endfor %}
+                        </div>
                     </article>
                     {% endfor %}
                 {% else %}
