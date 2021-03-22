@@ -4,6 +4,7 @@ from flask import (Flask, g, render_template, flash, redirect, url_for,
 from flask_bcrypt import check_password_hash
 from flask_login import (LoginManager, login_user, logout_user,
                          login_required, current_user)
+from datetime import datetime
 
 import forms
 import models
@@ -132,12 +133,7 @@ def detail(entry_id):
         entry = models.Entry.get(
             models.Entry.id == entry_id
         )
-        entry_tags = (models.Tag.select(models.Tag)
-                      .join(models.EntryTag)
-                      .join(models.Entry)
-                      .where(models.EntryTag.entry_tag_id == models.Entry.id)
-                      )
-
+        entry_tags = models.Tag.get_entry_tags(entry_id)
         return render_template(
             'detail.html',
             entry=entry,
@@ -169,20 +165,16 @@ def tags(tag_id):
 @ app.route('/')
 @ login_required
 def index():
-    entries = models.Entry.select().limit(100)
-    # entry_tags = []
-    entry_tags = (models.Tag
-                  .select()
-                  .join(models.EntryTag)
-                  .join(models.Entry)
-                  .where(models.Entry.id == models.EntryTag.entry_tag_id)
-                  )
-    # for tag in tagged_entries:
-    #     entry_tags.append(tag.id)
+    entries = (models.Entry
+               .select()
+               .join(models.EntryTag)
+               .join(models.Tag)
+               )
+    specific_tag = (models.Tag.get(entries.tag_id == models.Tag.id))
     return render_template(
         'index.html',
         entries=entries,
-        entry_tags=entry_tags
+        specific_tag=specific_tag
     )
 
 
@@ -265,4 +257,4 @@ if __name__ == '__main__':
             )
     except ValueError:
         pass
-    app.run()
+    app.run(debug=True)

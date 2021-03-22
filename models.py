@@ -43,10 +43,14 @@ class Entry(Model):
     learned = TextField(null=False)
     resources = TextField(null=False)
     user = ForeignKeyField(User)
-    timestamp = DateTimeField(default=datetime.datetime.now)
+    entry_timestamp = DateTimeField(
+        default=datetime.datetime.now,
+        formats=['%Y-%m-%d %H:%M:%S']
+    )
 
     class Meta:
         database = DATABASE
+        order_by = ('-entry_timestamp',)
 
     @classmethod
     def create_entry(cls,
@@ -65,17 +69,17 @@ class Entry(Model):
             user=user,
         )
 
-    def get_tags():
-        return(Tag
-               .select(Entry, Tag, EntryTag)
-               .join(Entry)
-               .switch(EntryTag)
-               .join(Tag)
-               )
-
 
 class Tag(BaseModel):
     tag_content = CharField(unique=True, null=False)
+    tag_timestamp = DateTimeField(
+        default=datetime.datetime.now,
+        formats=['%Y-%m-%d %H:%M:%S']
+    )
+
+    class Meta:
+        database = DATABASE
+        order_by = ('tag_timestamp',)
 
     @classmethod
     def create_tags(cls, tag_content):
@@ -86,16 +90,21 @@ class Tag(BaseModel):
         except IntegrityError:
             pass
 
-    @classmethod
-    def find_entries(cls):
-        return(Entry
-               .select()
-               .join(
-                   EntryTag,
-                   on=EntryTag.tag_entry
-               ).where(
-                   EntryTag.entry_tag == cls)
-               )
+    def get_entry_tags(entry_id):
+        return (Tag
+                .select()
+                .join(
+                    EntryTag,
+                    on=(
+                        Entry.id == EntryTag.entry_tag_id
+                    ))
+                .join(
+                    Entry,
+                    on=(
+                        EntryTag.tag_entry_id == Tag.id
+                    ))
+                .where(Entry.id == entry_id)
+                )
 
 
 class EntryTag(BaseModel):

@@ -14,10 +14,10 @@
     {% if entry_tags %}
         <h3>Links to similar entries:</h3>
         <div>
-        {% for tag in entry_tags %}
+        {% for tagged_entry in entry_tags %}
 
             <ul>
-                <li><a href="{{ url_for('tags', tag_id=tag.id) }}">{{ tag.tag_content }}</a></li>
+                <li><a href="{{ url_for('tags', tag_id=tagged_entry.id) }}">{{ tagged_entry.tag_content }}</a></li>
             </ul>
         </div>
         {% endfor %}

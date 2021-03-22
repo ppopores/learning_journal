@@ -6,18 +6,16 @@
         <div class="container-fluid">
             <div class="entry-list">
                 {% if entries %}
-                    {% for entry in entries %}
+                    {% for item in entries %}
                     <article>
-                        <h2><a href="{{ url_for('detail', entry_id=entry.id) }}">{{ entry.title }}</a></h2>
-                        <time>{{ entry.entry_date.strftime('%B %d, %Y') }}</time>
-                        <p>{{ entry.time_spent }} minutes of work.</p>
-                        <div class="container">
+                        <h2><a href="{{ url_for('detail', entry_id=item.entrytag.entry_id) }}">{{ item.entry.title }}</a></h2>
+                        <time>{{ item.entry.entry_date.strftime('%B %d, %Y') }}</time>
+                        <p>{{ item.entry.time_spent }} minutes of work.</p>
+                        <!-- <div class="container">
                             <ul>
-                                {% for tag in entry_tags %}
                                 <li><a href="{{ url_for('tags', tag_id=tag.id) }}">{{ tag.tag_content }}</a></li>
-                                {% endfor %}
                             </ul>
-                        </div>
+                        </div> -->
                     </article>
                     {% endfor %}
                 {% else %}
