@@ -168,10 +168,16 @@ def index():
     entries = models.Entry.select().where(
         g.user.id == models.Entry.user
     ).limit(100)
-
     for entry in entries:
-        ident = entry.id
-        specific_tag = (models.Tag.select().where(ident == models.Tag.id))
+        get_specific_tag = (models.Tag
+                            .select()
+                            .join(models.EntryTag)
+                            .join(models.Entry)
+                            # .group_by(models.Tag)
+                            .where(entry.id == models.EntryTag.id)
+                            )
+        for tag in get_specific_tag:
+            specific_tag = models.Tag.get_entry_tags(tag.id)
     return render_template(
         'index.html',
         entries=entries,

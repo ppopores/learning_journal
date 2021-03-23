@@ -6,8 +6,10 @@
 <form method="POST" action="" class="form">
     {{ form.hidden_tag() }}
     {% for field in form %}
-        <label for="{{ field }}">{{ field }}</label>
-        {{ render_field(field) }}
+        {% if field.widget.input_type != 'hidden' %}
+            {{ field.label }}
+            {{ render_field(field) }}
+        {% endif %}
     {% endfor %}
     <button type="submit" id="submit">Update!</button>
     <a href="{{ url_for('index') }}" class="button button-secondary">Cancel</a>

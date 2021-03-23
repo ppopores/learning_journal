@@ -12,11 +12,11 @@
                         <time>{{ item.entry_date.strftime('%B %d, %Y') }}</time>
                         <p>{{ item.time_spent }} minutes of work.</p>
                         <div class="container">
-                            {% for tag in specific_tag %}
                             <ul>
+                            {% for tag in specific_tag %}
                                 <li><a href="{{ url_for('tags', tag_id=tag.id) }}">{{ tag.tag_content }}</a></li>
-                            </ul>
                             {% endfor %}
+                            </ul>
                         </div>
                     </article>
                     {% endfor %}
