@@ -106,6 +106,22 @@ class Tag(BaseModel):
         except IntegrityError:
             pass
 
+    def get_tagged_entries(self, tag_id):
+        return (Entry
+                .select()
+                .join(
+                    EntryTag,
+                    on=(
+                        Tag.id == EntryTag.tag_entry_id
+                    ))
+                .join(
+                    Tag,
+                    on=(
+                        EntryTag.entry_tag_id == Entry.id
+                    ))
+                .where(Tag.id == tag_id)
+                )
+
 
 class EntryTag(BaseModel):
     entry_tag = ForeignKeyField(Entry, backref='entry_tag')

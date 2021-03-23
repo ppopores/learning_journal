@@ -7,21 +7,17 @@
     <h3>{{ entry.time_spent }} minutes of study!</h3>
     <h3>Today I learned:</h3>
     <p>{{ entry.learned }}</p>
-    {% if entry.resources %}
-        <h3>I found these extra, relevant resources:</h3>
-        <p>{{ entry.resources }}</p>
-    {% endif %}
-    {% if entry_tags %}
-        <h3>Links to similar entries:</h3>
-        <div>
-        {% for tagged_entry in entry_tags %}
+    <h3>I found these extra, relevant resources:</h3>
+    <p>{{ entry.resources }}</p>
+    <h3>Links to similar entries:</h3>
+    <div class="container">
+    {% for tag in entry.get_entry_tags(entry.id) %}
+        <ul>
+            <li><a href="{{ url_for('tags', tag_id=tag.id) }}">{{ tag.tag_content }}</a></li>
+        </ul>
+    {% endfor %}
+    </div>
 
-            <ul>
-                <li><a href="{{ url_for('tags', tag_id=tagged_entry.id) }}">{{ tagged_entry.tag_content }}</a></li>
-            </ul>
-        </div>
-        {% endfor %}
-    {% endif %}
 </div>
 <footer>
     <div>

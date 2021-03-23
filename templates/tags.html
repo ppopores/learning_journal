@@ -4,11 +4,14 @@
 <body>
     <div>
         <ul class="entry-list">
-        <h3>Here are the entries related to {{ specific_tag.tag_content }}:</h3>
+        <h3>Here are some related entries:</h3>
 
-            {% for entry in tagged_entries %}
-                <li><a href="{{ url_for('detail', entry_id=entry.id) }}">{{ entry.title }}</a></li>
-            {% endfor %}
+
+                {% for item in entry_tag %}
+                    {% for tag in item.get_tagged_entries(item.id) %}
+                        <li><a href="{{ url_for('detail', entry_id=tag.id) }}">{{ tag.title }}</a></li>
+                    {% endfor %}
+                {% endfor %}
         </ul>
     </div>
 </body>

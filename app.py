@@ -133,11 +133,11 @@ def detail(entry_id):
         entry = models.Entry.get(
             models.Entry.id == entry_id
         )
-        entry_tags = models.Tag.get_entry_tags(entry_id)
+        # entry_tags = models.Tag.get_entry_tags(tag_entry_id)
         return render_template(
             'detail.html',
             entry=entry,
-            entry_tags=entry_tags
+            # entry_tags=entry_tags
         )
     except models.DoesNotExist:
         abort(404)
@@ -147,17 +147,11 @@ def detail(entry_id):
 @ login_required
 def tags(tag_id):
     try:
-        tagged_entries = (models.Entry
-                          .select()
-                          .join(models.EntryTag)
-                          .join(models.Tag)
-                          .where(tag_id == models.EntryTag.id)
-                          )
-        specific_tag = (models.Tag.get(tag_id == models.Tag.id))
+        entry_tag = (models.Tag
+                     .select().where(models.Tag.id == tag_id))
 
         return render_template("tags.html",
-                               tagged_entries=tagged_entries,
-                               specific_tag=specific_tag)
+                               entry_tag=entry_tag)
     except models.DoesNotExist:
         abort(404)
 
@@ -175,13 +169,6 @@ def index():
     )
 
 
-@ app.route('/entries')
-# @ login_required
-# def entries():
-#     entries = models.Entry.select().where(
-#         g.user.id == models.Entry.user
-#     ).limit(100)
-#     return render_template('entries.html', entries=entries)
 @ app.route('/entries/<int:entry_id>/edit', methods=('GET', 'POST'))
 @ login_required
 def edit_entries(entry_id):
