@@ -69,6 +69,22 @@ class Entry(Model):
             user=user,
         )
 
+    def get_entry_tags(self, entry_id):
+        return (Tag
+                .select()
+                .join(
+                    EntryTag,
+                    on=(
+                        Entry.id == EntryTag.entry_tag_id
+                    ))
+                .join(
+                    Entry,
+                    on=(
+                        EntryTag.tag_entry_id == Tag.id
+                    ))
+                .where(Entry.id == entry_id)
+                )
+
 
 class Tag(BaseModel):
     tag_content = CharField(unique=True, null=False)
@@ -89,22 +105,6 @@ class Tag(BaseModel):
             )
         except IntegrityError:
             pass
-
-    def get_entry_tags(entry_id):
-        return (Tag
-                .select()
-                .join(
-                    EntryTag,
-                    on=(
-                        Entry.id == EntryTag.entry_tag_id
-                    ))
-                .join(
-                    Entry,
-                    on=(
-                        EntryTag.tag_entry_id == Tag.id
-                    ))
-                .where(Entry.id == entry_id)
-                )
 
 
 class EntryTag(BaseModel):

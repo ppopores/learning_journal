@@ -163,37 +163,25 @@ def tags(tag_id):
 
 
 @ app.route('/')
+@ app.route('/entries')
 @ login_required
 def index():
     entries = models.Entry.select().where(
         g.user.id == models.Entry.user
     ).limit(100)
-    for entry in entries:
-        get_specific_tag = (models.Tag
-                            .select()
-                            .join(models.EntryTag)
-                            .join(models.Entry)
-                            # .group_by(models.Tag)
-                            .where(entry.id == models.EntryTag.id)
-                            )
-        for tag in get_specific_tag:
-            specific_tag = models.Tag.get_entry_tags(tag.id)
     return render_template(
         'index.html',
         entries=entries,
-        specific_tag=specific_tag
     )
 
 
 @ app.route('/entries')
-@ login_required
-def entries():
-    entries = models.Entry.select().where(
-        g.user.id == models.Entry.user
-    ).limit(100)
-    return render_template('entries.html', entries=entries)
-
-
+# @ login_required
+# def entries():
+#     entries = models.Entry.select().where(
+#         g.user.id == models.Entry.user
+#     ).limit(100)
+#     return render_template('entries.html', entries=entries)
 @ app.route('/entries/<int:entry_id>/edit', methods=('GET', 'POST'))
 @ login_required
 def edit_entries(entry_id):

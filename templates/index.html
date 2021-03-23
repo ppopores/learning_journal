@@ -13,7 +13,7 @@
                         <p>{{ item.time_spent }} minutes of work.</p>
                         <div class="container">
                             <ul>
-                            {% for tag in specific_tag %}
+                            {% for tag in item.get_entry_tags(item.id) %}
                                 <li><a href="{{ url_for('tags', tag_id=tag.id) }}">{{ tag.tag_content }}</a></li>
                             {% endfor %}
                             </ul>
