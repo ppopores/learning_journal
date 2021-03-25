@@ -160,9 +160,7 @@ def tags(tag_id):
 @ app.route('/entries')
 @ login_required
 def index():
-    entries = models.Entry.select().where(
-        g.user.id == models.Entry.user
-    ).limit(100)
+    entries = models.Entry.select().limit(100)
     return render_template(
         'index.html',
         entries=entries,
@@ -176,28 +174,48 @@ def edit_entries(entry_id):
         current_entry = models.Entry.get(
             entry_id == models.Entry.id
         )
+        """ This is where I keep trying to change things but I cannot seem to
+        get it to work.
+        I was hoping that i could use the html like with all of my other uses
+         of class methods
+        but I can't get the forms to show the data already in the database.
+
+        WHere should i be iterating this?"""
+
+        current_tags = models.Entry.get_entry_tags(current_entry.id)
         if g.user.id is current_entry.user_id:
             form = forms.EntryForm(obj=current_entry)
+            tag_form = forms.TagForm(obj=current_tags)
             if form.validate_on_submit():
                 edited_entry = models.Entry.update(
                     user=g.user.id,
-                    # title=form.title.data,
                     time_spent=form.time_spent.data,
                     learned=form.learned.data,
                     resources=form.resources.data,
-                    # tag=form.tag.data
                 )
                 edited_entry.execute()
+                if tag_form.validate_on_submit():
+                    tags = tag_form.tag_content.data.split()
+                    for tag in tags:
+                        models.Tag.update(tag_content=tag)
+                        models.EntryTag.create_linked_tag(
+                            entry=form.title.data,
+                            tag=tag
+                        )
+                        tag.execute()
                 flash("Edited and updated!", "success")
                 return redirect(url_for('index'))
             else:
                 return render_template(
-                    'edit.html', current_entry=current_entry, form=form
+                    'edit.html',
+                    current_entry=current_entry,
+                    form=form,
+                    tag_form=tag_form
                 )
         else:
             flash("Hey! This isn't yours to edit!", "error")
             return redirect(url_for('index'))
-    except models.EntryDoesNotExist:
+    except models.Entry.DoesNotExist:
         abort(404)
 
 
