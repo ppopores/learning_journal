@@ -195,32 +195,15 @@ def edit_entries(entry_id):
                     edited_entry.execute()
                     try:
                         if tag_form.validate_on_submit():
+                            for tag in current_tags:
+                                tag.delete_instance()
                             tags = tag_form.tag_content.data.split()
-                            tags_list = tags_list.values()
                             for tag in tags:
-                                if tag not in tags_list:
-                                    models.Tag.create(tag_content=tag)
-                                    models.EntryTag.create_linked_tag(
-                                        entry=form.title.data,
-                                        tag=tag
-                                    )
-                                else:
-                                    extra = (models.Tag
-                                             .select()
-                                             .where(
-                                                 models.Tag.tag_content**tag
-                                             ))
-                                    for tag in extra:
-                                        extra_tag = (models.EntryTag
-                                                     .select()
-                                                     .join(models.Tag,
-                                                           on=(tag.id == tag_entry_id)
-                                                           )
-                                                     )
-                                        tag.delete_instance()
-                                        for tag in extra_tag:
-                                            tag.delete_instance()
-                                # tag.execute()
+                                models.Tag.create(tag_content=tag)
+                                models.EntryTag.create_linked_tag(
+                                    entry=form.title.data,
+                                    tag=tag
+                                )
                     except IntegrityError:
                         pass
                     flash("Edited and updated!", "success")
