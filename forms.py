@@ -2,10 +2,11 @@
 from flask_wtf import FlaskForm
 from wtforms import (StringField, PasswordField, TextAreaField,
                      IntegerField)
+from wtforms.fields.html5 import DateField
 from wtforms.validators import (DataRequired, Regexp, ValidationError,
                                 Email, Length, EqualTo, Optional)
 
-from models import User, Entry
+from models import User
 
 
 # def validate_title(field, form):
@@ -68,7 +69,10 @@ class LoginForm(FlaskForm):
 
 class EntryForm(FlaskForm):
     title = StringField('Title:', validators=[DataRequired()])
-    # date = DateField('Date of Study:', format='%d-%m-%Y')
+    entry_date = DateField(
+        'Date of Study:',
+        # format='%m/%d/%Y'
+    )
     time_spent = IntegerField(
         "Study Time (Minutes):", validators=[DataRequired()]
     )

@@ -105,6 +105,7 @@ def new_entry():
         models.Entry.create_entry(
             user=g.user.id,
             title=entry_form.title.data,
+            entry_date=entry_form.entry_date.data,
             time_spent=entry_form.time_spent.data,
             learned=entry_form.learned.data,
             resources=entry_form.resources.data,
@@ -170,12 +171,18 @@ def index():
 @ app.route('/entries/<int:entry_id>/edit', methods=('GET', 'POST'))
 @ login_required
 def edit_entries(entry_id):
-    while True:
-        try:
-            current_entry = models.Entry.get(
-                entry_id == models.Entry.id
-            )
-            print(current_entry)
+
+    try:
+        current_entry = models.Entry.get(
+            entry_id == models.Entry.id
+        )
+    except IndexError:
+        abort(404)
+    except ValueError:
+        abort(404)
+    else:
+        while True:
+            # print(current_entry)
             current_tags = current_entry.get_entry_tags(current_entry.id)
             tags_list = []
             for tag in current_tags:
@@ -186,26 +193,26 @@ def edit_entries(entry_id):
                 tags_list = dict(tag_content=tags_list)
                 tag_form = forms.TagForm(data=tags_list)
                 if form.validate_on_submit():
-                    edited_entry = models.Entry.update(
-                        user=g.user.id,
-                        time_spent=form.time_spent.data,
-                        learned=form.learned.data,
-                        resources=form.resources.data,
-                    )
-                    edited_entry.execute()
-                    try:
-                        if tag_form.validate_on_submit():
-                            for tag in current_tags:
-                                tag.delete_instance()
-                            tags = tag_form.tag_content.data.split()
-                            for tag in tags:
-                                models.Tag.create(tag_content=tag)
-                                models.EntryTag.create_linked_tag(
-                                    entry=form.title.data,
-                                    tag=tag
-                                )
-                    except IntegrityError:
-                        pass
+                    current_entry.user = g.user.id
+                    current_entry.title = form.title.data
+                    current_entry.entry_date = form.entry_date.data
+                    current_entry.time_spent = form.time_spent.data
+                    current_entry.learned = form.learned.data
+                    current_entry.resources = form.resources.data
+                    current_entry.save()
+                if tag_form.validate_on_submit():
+                    for tag in current_tags:
+                        tag.delete_instance()
+                    tags = tag_form.tag_content.data.split()
+                    for tag in tags:
+                        try:
+                            models.Tag.create(tag_content=tag)
+                            models.EntryTag.create_linked_tag(
+                                entry=form.title.data,
+                                tag=tag
+                            )
+                        except IntegrityError:
+                            pass
                     flash("Edited and updated!", "success")
                     return redirect(url_for('index'))
                 else:
@@ -220,9 +227,9 @@ def edit_entries(entry_id):
                 flash("Hey! This isn't yours to edit!", "error")
                 return redirect(url_for('index'))
                 break
-        except models.Entry.DoesNotExist:
-            abort(404)
-            break
+        # except models.Entry.DoesNotExist:
+        #     abort(404)
+        #     break
 
 
 @ app.route('/entries/<int:entry_id>/delete', methods=('GET', 'POST'))

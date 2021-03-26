@@ -51,10 +51,12 @@ class Entry(Model):
     class Meta:
         database = DATABASE
         order_by = ('-entry_timestamp',)
+        only_save_dirty = True
 
     @classmethod
     def create_entry(cls,
                      title,
+                     entry_date,
                      time_spent,
                      learned,
                      resources,
@@ -63,6 +65,7 @@ class Entry(Model):
         # try:
         cls.create(
             title=title,
+            entry_date=entry_date,
             time_spent=time_spent,
             learned=learned,
             resources=resources,
