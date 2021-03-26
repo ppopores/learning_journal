@@ -50,7 +50,7 @@ class Entry(Model):
 
     class Meta:
         database = DATABASE
-        order_by = ('-entry_timestamp',)
+        order_by = ('-entry_date',)
         only_save_dirty = True
 
     @classmethod

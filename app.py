@@ -176,8 +176,6 @@ def edit_entries(entry_id):
         current_entry = models.Entry.get(
             entry_id == models.Entry.id
         )
-    except IndexError:
-        abort(404)
     except ValueError:
         abort(404)
     else:
@@ -202,11 +200,15 @@ def edit_entries(entry_id):
                     current_entry.save()
                 if tag_form.validate_on_submit():
                     for tag in current_tags:
-                        tag.delete_instance()
+                        entry_tag = (models.EntryTag
+                                     .get(
+                                         tag.id == models.EntryTag.tag_entry_id
+                                     ))
+                        entry_tag.delete_instance()
                     tags = tag_form.tag_content.data.split()
                     for tag in tags:
                         try:
-                            models.Tag.create(tag_content=tag)
+                            models.Tag.create_tags(tag_content=tag)
                             models.EntryTag.create_linked_tag(
                                 entry=form.title.data,
                                 tag=tag
