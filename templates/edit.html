@@ -11,14 +11,15 @@
             {{ render_field(field) }}
         {% endif %}
     {% endfor %}
-    {% for item in tag_form %}
-
-        {% if item.widget.input_type != 'hidden' %}
-            {{ item.label }}
-            {{ render_field(tag_form) }}
+    {% for field in tag_form %}
+        {% if field.widget.input_type != 'hidden' %}
+            {{ field.label }}
+            {{ render_field(field) }}
         {% endif %}
     {% endfor %}
+
     <button type="submit" id="submit">Update!</button>
     <a href="{{ url_for('index') }}" class="button button-secondary">Cancel</a>
 </form>
+
 {% endblock %}

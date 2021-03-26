@@ -174,6 +174,7 @@ def edit_entries(entry_id):
         current_entry = models.Entry.get(
             entry_id == models.Entry.id
         )
+        print(current_entry)
         """ This is where I keep trying to change things but I cannot seem to
         get it to work.
         I was hoping that i could use the html like with all of my other uses
@@ -182,10 +183,14 @@ def edit_entries(entry_id):
 
         WHere should i be iterating this?"""
 
-        current_tags = models.Entry.get_entry_tags(current_entry.id)
+        current_tags = current_entry.get_entry_tags(current_entry.id)
+        tags_list = []
+        for tag in current_tags:
+            tags_list.append(tag.tag_content)
+        tags_list = " ".join(tags_list)
         if g.user.id is current_entry.user_id:
             form = forms.EntryForm(obj=current_entry)
-            tag_form = forms.TagForm(obj=current_tags)
+            tag_form = forms.TagForm(formdata=tags_list)
             if form.validate_on_submit():
                 edited_entry = models.Entry.update(
                     user=g.user.id,
@@ -210,7 +215,8 @@ def edit_entries(entry_id):
                     'edit.html',
                     current_entry=current_entry,
                     form=form,
-                    tag_form=tag_form
+                    tag_form=tag_form,
+                    tags_list=tags_list
                 )
         else:
             flash("Hey! This isn't yours to edit!", "error")
