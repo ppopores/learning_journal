@@ -170,59 +170,76 @@ def index():
 @ app.route('/entries/<int:entry_id>/edit', methods=('GET', 'POST'))
 @ login_required
 def edit_entries(entry_id):
-    try:
-        current_entry = models.Entry.get(
-            entry_id == models.Entry.id
-        )
-        print(current_entry)
-        """ This is where I keep trying to change things but I cannot seem to
-        get it to work.
-        I was hoping that i could use the html like with all of my other uses
-         of class methods
-        but I can't get the forms to show the data already in the database.
-
-        WHere should i be iterating this?"""
-
-        current_tags = current_entry.get_entry_tags(current_entry.id)
-        tags_list = []
-        for tag in current_tags:
-            tags_list.append(tag.tag_content)
-        tags_list = " ".join(tags_list)
-        if g.user.id is current_entry.user_id:
-            form = forms.EntryForm(obj=current_entry)
-            tag_form = forms.TagForm(formdata=tags_list)
-            if form.validate_on_submit():
-                edited_entry = models.Entry.update(
-                    user=g.user.id,
-                    time_spent=form.time_spent.data,
-                    learned=form.learned.data,
-                    resources=form.resources.data,
-                )
-                edited_entry.execute()
-                if tag_form.validate_on_submit():
-                    tags = tag_form.tag_content.data.split()
-                    for tag in tags:
-                        models.Tag.update(tag_content=tag)
-                        models.EntryTag.create_linked_tag(
-                            entry=form.title.data,
-                            tag=tag
-                        )
-                        tag.execute()
-                flash("Edited and updated!", "success")
-                return redirect(url_for('index'))
+    while True:
+        try:
+            current_entry = models.Entry.get(
+                entry_id == models.Entry.id
+            )
+            print(current_entry)
+            current_tags = current_entry.get_entry_tags(current_entry.id)
+            tags_list = []
+            for tag in current_tags:
+                tags_list.append(tag.tag_content)
+            tags_list = " ".join(tags_list)
+            if g.user.id is current_entry.user_id:
+                form = forms.EntryForm(obj=current_entry)
+                tags_list = dict(tag_content=tags_list)
+                tag_form = forms.TagForm(data=tags_list)
+                if form.validate_on_submit():
+                    edited_entry = models.Entry.update(
+                        user=g.user.id,
+                        time_spent=form.time_spent.data,
+                        learned=form.learned.data,
+                        resources=form.resources.data,
+                    )
+                    edited_entry.execute()
+                    try:
+                        if tag_form.validate_on_submit():
+                            tags = tag_form.tag_content.data.split()
+                            tags_list = tags_list.values()
+                            for tag in tags:
+                                if tag not in tags_list:
+                                    models.Tag.create(tag_content=tag)
+                                    models.EntryTag.create_linked_tag(
+                                        entry=form.title.data,
+                                        tag=tag
+                                    )
+                                else:
+                                    extra = (models.Tag
+                                             .select()
+                                             .where(
+                                                 models.Tag.tag_content**tag
+                                             ))
+                                    for tag in extra:
+                                        extra_tag = (models.EntryTag
+                                                     .select()
+                                                     .join(models.Tag,
+                                                           on=(tag.id == tag_entry_id)
+                                                           )
+                                                     )
+                                        tag.delete_instance()
+                                        for tag in extra_tag:
+                                            tag.delete_instance()
+                                # tag.execute()
+                    except IntegrityError:
+                        pass
+                    flash("Edited and updated!", "success")
+                    return redirect(url_for('index'))
+                else:
+                    return render_template(
+                        'edit.html',
+                        current_entry=current_entry,
+                        form=form,
+                        tag_form=tag_form,
+                        tags_list=tags_list
+                    )
             else:
-                return render_template(
-                    'edit.html',
-                    current_entry=current_entry,
-                    form=form,
-                    tag_form=tag_form,
-                    tags_list=tags_list
-                )
-        else:
-            flash("Hey! This isn't yours to edit!", "error")
-            return redirect(url_for('index'))
-    except models.Entry.DoesNotExist:
-        abort(404)
+                flash("Hey! This isn't yours to edit!", "error")
+                return redirect(url_for('index'))
+                break
+        except models.Entry.DoesNotExist:
+            abort(404)
+            break
 
 
 @ app.route('/entries/<int:entry_id>/delete', methods=('GET', 'POST'))

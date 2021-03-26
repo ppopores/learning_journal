@@ -17,7 +17,7 @@
             {{ render_field(field) }}
         {% endif %}
     {% endfor %}
-
+    {{ tags_list.values }}
     <button type="submit" id="submit">Update!</button>
     <a href="{{ url_for('index') }}" class="button button-secondary">Cancel</a>
 </form>
