@@ -5,7 +5,10 @@
 <form method="POST" action="" class="form">
     {{ login_form.hidden_tag() }}
     {% for field in login_form %}
-        {{ render_field(field) }}
+        {% if field.widget.input_type != 'hidden' %}
+            {{ field.label }}
+            {{ render_field(field) }}
+        {% endif %}
     {% endfor %}
     <button type="submit" id="submit">Log In!</button>
 </form>

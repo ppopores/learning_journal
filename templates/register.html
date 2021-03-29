@@ -7,7 +7,10 @@
 <form method="POST" action="" class="form">
     {{ reg_form.hidden_tag() }}
     {% for field in reg_form %}
-        {{ render_field(field) }}
+        {% if field.widget.input_type != 'hidden' %}
+            {{ field.label }}
+            {{ render_field(field) }}
+        {% endif %}
     {% endfor %}
     <button type="submit" id="submit">Sign Up!</button>
 </form>

@@ -83,11 +83,11 @@ class EntryForm(FlaskForm):
 
 class TagForm(FlaskForm):
     tag_content = StringField(
-        'Subject Tags:',
+        'Subject Tags Separated By Spaces:',
         validators=[
             Optional(),
             Regexp(
                 r'^[a-zA-Z0-9_\s]+$',
-                message="Tags must best letters. "
+                message="Tags must be letters. "
             )
         ])
