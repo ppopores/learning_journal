@@ -161,7 +161,12 @@ def tags(tag_id):
 @ app.route('/entries')
 @ login_required
 def index():
-    entries = models.Entry.select().limit(100)
+    entries = (models.Entry
+               .select()
+               .limit(100)
+               .order_by(
+                   models.Entry.entry_date.desc()
+               ))
     return render_template(
         'index.html',
         entries=entries,
